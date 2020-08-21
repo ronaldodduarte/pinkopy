@@ -38,3 +38,26 @@ class SubclientSession(BaseSession):
             msg = 'No subclients for client {}'.format(client_id)
             raise_requests_error(404, msg)
         return subclients
+
+
+    def get_subclient_properties(self, subclient_id):
+        """Get subclient properties.
+
+        Args:
+            subclient_id: subclient id for which to get subclient properties
+
+        Returns:
+            Dict: subclient properties
+        """
+        subclient_id = str(subclient_id)
+        path = 'Subclient/' + subclient_id
+        res = self.request('GET', path)
+        data = res.json()
+        try:
+            subclient_properties = data['subClientProperties']
+        except KeyError:
+            subclient_properties = data['App_GetSubClientPropertiesResponse']['subClientProperties']
+        if not subclient_properties:
+            msg = 'No subclient for subclient_id {}'.format(subclient_id)
+            raise_requests_error(404, msg)
+        return subclient_properties
