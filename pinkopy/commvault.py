@@ -33,6 +33,7 @@ class CommvaultSession(BaseSession):
         self.get_clients = self.clients.get_clients
 
         self.get_subclients = self.subclients.get_subclients
+        self.get_subclient_properties = self.subclients.get_subclient_properties
 
         self.get_job_details = self.jobs.get_job_details
         self.get_job_vmstatus = self.jobs.get_job_vmstatus

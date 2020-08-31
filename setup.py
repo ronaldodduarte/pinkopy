@@ -21,7 +21,7 @@ tests_require = [
 
 setup(
     name='commvault_client',
-    version='2.2.1',
+    version='2.2.2',
     description='Python wrapper for Commvault api',
     long_description_content_type='text/markdown',
     long_description=readme,

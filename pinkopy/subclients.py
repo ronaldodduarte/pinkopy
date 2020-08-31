@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 class SubclientSession(BaseSession):
     """Methods for subclients."""
     def __init__(self, cache_methods=None, *args, **kwargs):
-        cache_methods = cache_methods or ['get_subclients']
+        cache_methods = cache_methods or ['get_subclients',
+                                          'get_subclient_properties']
         super(SubclientSession, self).__init__(cache_methods=cache_methods, *args, **kwargs)
 
     def get_subclients(self, client_id):
@@ -38,7 +39,6 @@ class SubclientSession(BaseSession):
             msg = 'No subclients for client {}'.format(client_id)
             raise_requests_error(404, msg)
         return subclients
-
 
     def get_subclient_properties(self, subclient_id):
         """Get subclient properties.

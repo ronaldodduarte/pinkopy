@@ -16,6 +16,7 @@ class TestCommvaultSessionMethods(unittest.TestCase):
         assert commvault.get_client_properties == commvault.clients.get_client_properties
         assert commvault.get_clients == commvault.clients.get_clients
         assert commvault.get_subclients == commvault.subclients.get_subclients
+        assert commvault.get_subclient_properties == commvault.subclients.get_subclient_properties
         assert commvault.get_job_details == commvault.jobs.get_job_details
         assert commvault.get_job_vmstatus == commvault.jobs.get_job_vmstatus
         assert commvault.get_jobs == commvault.jobs.get_jobs
