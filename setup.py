@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from setuptools import setup, find_packages
 import sys
 
@@ -22,14 +20,14 @@ tests_require = [
 ]
 
 setup(
-    name='pinkopy',
-    version='2.2.dev',
+    name='commvault_client',
+    version='2.2',
     description='Python wrapper for Commvault api',
+    long_description_content_type='text/markdown',
     long_description=readme,
     author='Herkermer Sherwood',
     author_email='theherk@gmail.com',
-    url='https://github.com/theherk/pinkopy',
-    download_url='https://github.com/theherk/pinkopy/archive/2.2.dev.zip',
+    url='https://github.com/ronaldodduarte/pinkopy',
     packages=find_packages(),
     platforms=['all'],
     license='MIT',

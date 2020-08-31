@@ -23,7 +23,7 @@ Installation
 Usage
 -----
 
-```python
+~~~python
 from pinkopy import CommvaultSession
 
 config = {
@@ -40,52 +40,52 @@ with CommvaultSession(**config) as commvault:
         job_id = job['jobSummary']['jobId']
         job_details = commvault.jobs.get_job_details('1234', job_id)
         job_vmstatus = commvault.jobs.get_job_vmstatus(job_details)
-```
+~~~
 
 pinkopy doesn't have to be used as a context manager.
 
-```python
+~~~python
 commvault = CommvaultSession(**config)
-```
+~~~
 
 pinkopy used to have all the methods on one class. Now, the methods are divided among several classes and are similar to how the api, itself, is laid out. However, the methods that existed when the modularity was introduced, a shim was also introduced to be backwards compatible. So those methods can be called on the CommvaultSession instance directly.
 
-```python
+~~~python
 client_properties = commvault.clients.get_client_properties('2234')
 # or the old way
 client_properties = commvault.get_client_properties('2234')
-```
+~~~
 
 This way, you old code works. In addition, you can instantiate just the session you need if you prefer.
 
-```python
+~~~python
 with SubclientSession(**config) as subclients:
     subclients = subclients.get_subclients('2234')
-```
+~~~
 
 ### Cache
 
 The biggest introduction in 2.0.0 was an improved take on caching. Rather than implementing our own ill-conceived cache, we implemented a great [ttl_cache](https://pythonhosted.org/cachetools/#cachetools.func.ttl_cache) that uses [lru_cache](https://docs.python.org/3/library/functools.html#functools.lru_cache) from the core library. It is from a library called [cachetools](https://pythonhosted.org/cachetools/). The implementation allows you to pass in a list of methods you want to use this cache or provides very sensible defaults if you don't.
 
-The cache, for the duration of `cache_ttl`, will respond with the previous return value without running the function. So, for instance, the `get_clients` call could take several seconds on the first call, but only a few milliseconds on following calls.
+The cache, for the duration of ~cache_ttl~, will respond with the previous return value without running the function. So, for instance, the ~get_clients~ call could take several seconds on the first call, but only a few milliseconds on following calls.
 
 By default, we cache for 20 minutes, but you can set this value, too.
 
-```python
+~~~python
 cache_methods = ['get_clients', 'get_subclients']
 with CommvaultSession(cache_ttl=120, cache_methods=cache_methods, **config) as commvault:
     clients1 = commvault.clients.get_clients() # slow
     clients2 = commvault.clients.get_clients() # fast
     # ... fast
-```
+~~~
 
 Or turn off the cache entirely.
 
-```python
+~~~python
 with CommvaultSession(use_cache=False, **config) as commvault:
     clients1 = commvault.clients.get_clients() # slow
     clients2 = commvault.clients.get_clients() # slow but fresh
-```
+~~~
 
 Contribution
 ------------
