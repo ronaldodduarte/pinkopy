@@ -58,6 +58,24 @@ class SubclientSession(BaseSession):
         except KeyError:
             subclient_properties = data['App_GetSubClientPropertiesResponse']['subClientProperties']
         if not subclient_properties:
-            msg = 'No subclient for subclient_id {}'.format(subclient_id)
+            msg = 'No subclient properties for subclient_id {}'.format(subclient_id)
             raise_requests_error(404, msg)
         return subclient_properties
+
+    def get_suclient_bkp_info_by_client_id(self, client_id):
+        try:
+            subclients_info = self.get_subclients(client_id)
+        except Exception as e:
+            raise e
+
+        subclients_bkp_details = list()
+        for subclient in subclients_info:
+            subclient_id = subclient['subClientEntity']['subclientId']
+            try:
+                subclient_bkp_info = self.get_subclient_properties(subclient_id)
+            except Exception as e:
+                subclient_bkp_info = [e.args[0]]
+
+            subclients_bkp_details.append(subclient_bkp_info)
+
+        return subclients_bkp_details
