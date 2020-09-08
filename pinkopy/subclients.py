@@ -75,7 +75,7 @@ class SubclientSession(BaseSession):
             try:
                 subclient_bkp_info = self.get_subclient_properties(subclient_id)
             except Exception as e:
-                subclient_bkp_info = [e.args[0]]
+                subclient_bkp_info = [{'error': e.args[0]}]
 
             subclients_bkp_details.append(subclient_bkp_info)
 
