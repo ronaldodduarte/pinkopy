@@ -4,6 +4,7 @@ from .base_session import BaseSession
 from .clients import ClientSession
 from .jobs import JobSession
 from .subclients import SubclientSession
+from .agents import AgentSession
 
 log = logging.getLogger(__name__)
 
@@ -21,16 +22,22 @@ class CommvaultSession(BaseSession):
 
         self.clients = ClientSession(token=self.headers['Authtoken'], *args, **kwargs)
         self.subclients = SubclientSession(token=self.headers['Authtoken'], *args, **kwargs)
+        self.agents = AgentSession(token=self.headers['Authtoken'], *args, **kwargs)
         self.jobs = JobSession(token=self.headers['Authtoken'], *args, **kwargs)
 
         self.subsessions = [self.clients,
                             self.subclients,
+                            self.agents,
                             self.jobs]
 
         # shim for backwards compatibility
         self.get_client = self.clients.get_client
         self.get_client_properties = self.clients.get_client_properties
         self.get_clients = self.clients.get_clients
+        self.get_clients_list = self.clients._get_clients_list
+        self.search_client_by_name = self.clients.search_client_by_name
+
+        self.get_agent = self.agents.get_agent
 
         self.get_subclients = self.subclients.get_subclients
         self.get_subclient_properties = self.subclients.get_subclient_properties
@@ -42,6 +49,9 @@ class CommvaultSession(BaseSession):
         self.get_subclient_jobs = self.jobs.get_subclient_jobs
 
         self.__cache_methods = list({m for obj in self.subsessions for m in obj.cache_methods})
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.logout()
 
     def logout(self):
         """End session for all subsessions."""

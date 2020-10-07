@@ -1,7 +1,8 @@
 import logging
 
 from .base_session import BaseSession
-from .exceptions import PinkopyError, raise_requests_error
+from .exceptions import raise_requests_error
+from requests import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -30,12 +31,14 @@ class SubclientSession(BaseSession):
         qstr_vals = {
             'clientId': client_id
         }
-        res = self.request('GET', path, qstr_vals=qstr_vals)
-        data = res.json()
         try:
-            subclients = data['subClientProperties']
-        except KeyError:
-            subclients = data['App_GetSubClientPropertiesResponse']['subClientProperties']
+            res = self.request('GET', path, qstr_vals=qstr_vals)
+            data = res.json()
+            subclients = data.get('subClientProperties')
+        except Exception as e:
+            msg = f'Fail to  get subclients for client {client_id} - {str(e)}'
+            raise_requests_error(500, msg)
+
         if not subclients:
             msg = 'No subclients for client {}'.format(client_id)
             raise_requests_error(404, msg)
@@ -52,12 +55,19 @@ class SubclientSession(BaseSession):
         """
         subclient_id = str(subclient_id)
         path = 'Subclient/' + subclient_id
-        res = self.request('GET', path)
-        data = res.json()
         try:
-            subclient_properties = data['subClientProperties']
-        except KeyError:
-            subclient_properties = data['App_GetSubClientPropertiesResponse']['subClientProperties']
+            res = self.request('GET', path)
+            data = res.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                msg = f'Subclient {subclient_id} not found.'
+                raise_requests_error(404, msg)
+            else:
+                raise_requests_error(e.response.status_code, str(e))
+        except Exception as e:
+            raise_requests_error(500, str(e))
+
+        subclient_properties = data.get('subClientProperties')
         if not subclient_properties:
             msg = 'No subclient properties for subclient_id {}'.format(subclient_id)
             raise_requests_error(404, msg)

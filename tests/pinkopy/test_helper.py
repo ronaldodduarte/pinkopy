@@ -8,12 +8,21 @@ def mock_session(base_session, service=None, user=None, pw=None, token=None,
     pw = pw or 'pw'
     token = token or 'token'
     content_type = content_type or 'application/json'
-    clients = clients or ['client1', 'client2']
-    get_response = {
-        'App_GetClientPropertiesResponse': {
-            'clientProperties': clients
+    clients = clients or [
+        {'client': {
+            'clientEntity': {
+                'hostName': 'name',
+                'clientId': 2,
+                'clientName': 'client',
+                'displayName': 'display'
+            }
         }
-    }
+        }
+    ]
+    get_response = {
+        'clientProperties': clients
+        }
+
     post_response = {
         'token': token
     }
@@ -39,6 +48,7 @@ def mock_session(base_session, service=None, user=None, pw=None, token=None,
             'Token': token,
             'User': user
         }
+
         return test_data
 
 

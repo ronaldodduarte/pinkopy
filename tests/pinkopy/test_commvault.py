@@ -15,6 +15,7 @@ class TestCommvaultSessionMethods(unittest.TestCase):
         assert commvault.get_client == commvault.clients.get_client
         assert commvault.get_client_properties == commvault.clients.get_client_properties
         assert commvault.get_clients == commvault.clients.get_clients
+        assert commvault.get_agent == commvault.agents.get_agent
         assert commvault.get_subclients == commvault.subclients.get_subclients
         assert commvault.get_subclient_properties == commvault.subclients.get_subclient_properties
         assert commvault.get_suclient_bkp_info_by_client_id == commvault.subclients.get_suclient_bkp_info_by_client_id
@@ -25,9 +26,11 @@ class TestCommvaultSessionMethods(unittest.TestCase):
         assert commvault.clients.__class__.__name__ == 'ClientSession'
         assert commvault.jobs.__class__.__name__ == 'JobSession'
         assert commvault.subclients.__class__.__name__ == 'SubclientSession'
+        assert commvault.agents.__class__.__name__ == 'AgentSession'
         test_helper.validate_base_session(expected, commvault.clients)
         test_helper.validate_base_session(expected, commvault.jobs)
         test_helper.validate_base_session(expected, commvault.subclients)
+        test_helper.validate_base_session(expected, commvault.agents)
 
     def test__enter__(self):
         session = test_helper.mock_session(CommvaultSession)['Session']

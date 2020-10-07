@@ -1,8 +1,8 @@
 import logging
-import xmltodict
-
+from requests import HTTPError
 from .base_session import BaseSession
 from .exceptions import raise_requests_error
+import re
 
 log = logging.getLogger(__name__)
 
@@ -12,8 +12,11 @@ class ClientSession(BaseSession):
     def __init__(self, cache_methods=None, *args, **kwargs):
         cache_methods = cache_methods or ['get_client',
                                           'get_client_properties',
-                                          'get_clients']
+                                          'get_clients',
+                                          'get_clients_list'
+                                          ]
         super(ClientSession, self).__init__(cache_methods=cache_methods, *args, **kwargs)
+        self.clients_list = self._get_clients_list()
 
     def get_client(self, client_id):
         """Get client.
@@ -56,21 +59,16 @@ class ClientSession(BaseSession):
             log.warning('deprecated: client_id support for int for backward compatibility only')
             client_id = str(client_id)
         path = 'Client/{}'.format(client_id)
-        res = self.request('GET', path)
-        # If you are using a < v10 SP12 this call will respond in
-        # xml even though we are requesting json.
-        if not res.json():
-            # turn wrong xml into json
-            data = xmltodict.parse(res.text)
-        else:
-            data = res.json()
         try:
-            props = data['clientProperties']
-        except KeyError:
-            # support previous Commvault api versions
-            props = data['App_GetClientPropertiesResponse']['clientProperties']
+            res = self.request('GET', path)
+            data = res.json()
+            props = data.get('clientProperties')
+        except Exception as e:
+            msg = f'Fail to get properties for client {client_id} - {str(e)}'
+            raise_requests_error(500, msg)
+
         if not props:
-            msg = 'No client properties found for client {}'.format(client_id)
+            msg = f'No client properties found for client {client_id}'
             raise_requests_error(404, msg)
         return props
 
@@ -81,14 +79,55 @@ class ClientSession(BaseSession):
             list: clients
         """
         path = 'Client'
-        res = self.request('GET', path)
-        data = res.json()
+
         try:
-            clients = data['clientProperties']
-        except KeyError:
-            # support previous Commvault api versions
-            clients = data['App_GetClientPropertiesResponse']['clientProperties']
+            res = self.request('GET', path)
+            data = res.json()
+            clients = data.get('clientProperties')
+        except Exception as e:
+            msg = f'Fail to get clients list from Commvault - {str(e)}'
+            raise_requests_error(500, msg)
+
         if not clients:
             msg = 'No clients found in Commvault'
             raise_requests_error(404, msg)
+
         return clients
+
+    def _get_clients_list(self):
+        """Get clients list with specific fields.
+
+        Returns:
+            dict: clients
+        """
+
+        try:
+            clients_ = self.get_clients()
+        except HTTPError as e:
+            raise_requests_error(404, str(e))
+        except Exception as e:
+            raise_requests_error(500, str(e))
+
+        client_list = dict()
+        for item in clients_:
+            client_list[item['client']['clientEntity']['clientName'].lower()] = {
+                'hostName': item['client']['clientEntity']['hostName'],
+                'clientId': item['client']['clientEntity']['clientId'],
+                'displayName': item['client']['clientEntity']['displayName'],
+                'clientName': item['client']['clientEntity']['clientName']
+            }
+
+        return client_list
+
+    def search_client_by_name(self, host_name):
+        client_name = host_name.split('.')[0].lower()
+        clients = list(filter(lambda _client: re.search(client_name, _client), list(self.clients_list.keys())))
+        clients_list = list()
+        for client in clients:
+            clients_list.append(self.clients_list.get(client))
+
+        if not clients_list:
+            msg = f'No clients found for host {host_name}'
+            raise_requests_error(404, msg)
+
+        return clients_list

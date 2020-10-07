@@ -115,7 +115,7 @@ class BaseSession(object):
         """
         # We may need to recall the same request.
         # Must pop self because it is passed implicitly and cannot be passed twice.
-        _context = {k: v for k, v in locals().items() if k is not 'self'}
+        _context = {k: v for k, v in locals().items() if k != 'self'}
         allowed_attempts = 3
         attempt = 1 if not attempt else attempt
         service = service if service else self.service
